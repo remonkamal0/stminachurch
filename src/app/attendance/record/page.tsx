@@ -302,54 +302,38 @@ function RecordAttendanceContent() {
   const presentCount = Object.values(attendanceState).filter((s) => s === 'present' || s === 'late').length
   const absentCount = totalStudents - presentCount
 
-  const handleSaveMeeting = () => {
+  const handleSaveMeeting = async () => {
+    try {
+      const isXampp = typeof window !== 'undefined' && window.location.pathname.includes('/stmina')
+      const apiUrl = isXampp ? '/stmina/api/attendance.php' : '/api/attendance.php'
+      
+      const records = students.map((s) => ({
+        student_id: s.id,
+        status: attendanceState[s.id] || 'absent',
+        notes: massState[s.id] ? 'حضر القداس الإلهي' : ''
+      }))
+
+      await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          meeting_date: new Date().toISOString().split('T')[0],
+          records: records
+        })
+      })
+
+      alert('تم حفظ كشف الحضور والغياب بنجاح في قاعدة البيانات! 💾✨')
+    } catch (e) {
+      console.error('Error saving attendance to MySQL:', e)
+    }
+
     if (meetingId) {
       try {
         const savedMeetings = localStorage.getItem('localMeetings')
         let meetingsList = []
         if (savedMeetings) {
           meetingsList = JSON.parse(savedMeetings)
-        } else {
-          meetingsList = [
-            {
-              id: 'm1',
-              date: '2026-08-16',
-              time: '09:00',
-              class_id: 'c1',
-              class_name: 'الأنبا بيشوي',
-              stage_name: 'ابتدائي',
-              type: 'weekly',
-              notes: 'اجتماع الأحد العادي - دراسة قصة داود وجليات',
-              present_count: 21,
-              absent_count: 3
-            },
-            {
-              id: 'm2',
-              date: '2026-08-16',
-              time: '09:00',
-              class_id: 'c2',
-              class_name: 'القديسة دميانة',
-              stage_name: 'ابتدائي',
-              type: 'weekly',
-              notes: 'الاجتماع الأسبوعي - ورشة عمل صلصال',
-              present_count: 26,
-              absent_count: 2
-            },
-            {
-              id: 'm3',
-              date: '2026-08-14',
-              time: '18:00',
-              class_id: null,
-              class_name: 'كل الفصول (مرحلي)',
-              stage_name: 'إعدادي',
-              type: 'spiritual',
-              notes: 'اجتماع روحي مسائي للمرحلة بالكامل',
-              present_count: 55,
-              absent_count: 12
-            }
-          ]
         }
-
         const updatedMeetings = meetingsList.map((m: any) => {
           if (m.id === meetingId) {
             return {
@@ -360,13 +344,13 @@ function RecordAttendanceContent() {
           }
           return m
         })
-
         localStorage.setItem('localMeetings', JSON.stringify(updatedMeetings))
       } catch (e) {
         console.error('Failed to save local meeting count', e)
       }
     }
-    router.push('/attendance')
+    const isXampp = typeof window !== 'undefined' && window.location.pathname.includes('/stmina')
+    window.location.href = isXampp ? '/stmina/attendance/' : '/attendance/'
   }
 
   return (

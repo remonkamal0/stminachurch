@@ -1,63 +1,81 @@
 <?php
 require_once __DIR__ . '/db.php';
+
 $db = getDB();
 $method = $_SERVER['REQUEST_METHOD'];
 
 if ($method === 'GET') {
-    $date = $_GET['date'] ?? null;
     $student_id = $_GET['student_id'] ?? null;
+    $date = $_GET['date'] ?? null;
     $class_id = $_GET['class_id'] ?? null;
 
     if ($student_id) {
-        $stmt = $db->prepare("SELECT * FROM attendance WHERE student_id = ? ORDER BY meeting_date DESC");
+        $stmt = $db->prepare("
+            SELECT a.*, s.full_name 
+            FROM attendance a 
+            JOIN students s ON a.student_id = s.id 
+            WHERE a.student_id = ? 
+            ORDER BY a.meeting_date DESC
+        ");
         $stmt->execute([$student_id]);
         sendResponse($stmt->fetchAll());
+    } elseif ($date) {
+        $stmt = $db->prepare("
+            SELECT a.*, s.full_name, s.class_name, s.stage_name 
+            FROM attendance a 
+            JOIN students s ON a.student_id = s.id 
+            WHERE a.meeting_date = ? 
+            ORDER BY s.full_name ASC
+        ");
+        $stmt->execute([$date]);
+        sendResponse($stmt->fetchAll());
     } else {
-        $targetDate = $date ?: date('Y-m-d');
-        $query = "SELECT a.*, s.full_name, s.class_name, s.stage_name 
-                  FROM attendance a 
-                  JOIN students s ON a.student_id = s.id 
-                  WHERE a.meeting_date = ?";
-        $params = [$targetDate];
-
-        if ($class_id) {
-            $query .= " AND s.class_name = ?";
-            $params[] = $class_id;
-        }
-
-        $stmt = $db->prepare($query);
-        $stmt->execute($params);
+        $stmt = $db->query("
+            SELECT a.*, s.full_name, s.class_name, s.stage_name 
+            FROM attendance a 
+            JOIN students s ON a.student_id = s.id 
+            ORDER BY a.meeting_date DESC 
+            LIMIT 100
+        ");
         sendResponse($stmt->fetchAll());
     }
 } elseif ($method === 'POST') {
     $input = getJsonInput();
+    
+    // Batch or Single
+    if (isset($input['records']) && is_array($input['records'])) {
+        $date = $input['meeting_date'] ?? date('Y-m-d');
+        $stmt = $db->prepare("
+            INSERT INTO attendance (id, student_id, meeting_date, status, notes) 
+            VALUES (?, ?, ?, ?, ?) 
+            ON DUPLICATE KEY UPDATE status = VALUES(status), notes = VALUES(notes)
+        ");
+        
+        foreach ($input['records'] as $rec) {
+            if (!empty($rec['student_id'])) {
+                $id = 'att_' . uniqid();
+                $status = $rec['status'] ?? 'present';
+                $notes = $rec['notes'] ?? null;
+                $stmt->execute([$id, $rec['student_id'], $date, $status, $notes]);
+            }
+        }
+        sendResponse(['success' => true, 'message' => 'تم حفظ كشف الحضور بالكامل في قاعدة البيانات بنجاح']);
+    } else {
+        $student_id = $input['student_id'] ?? null;
+        $status = $input['status'] ?? 'present';
+        $date = $input['meeting_date'] ?? date('Y-m-d');
+        $notes = $input['notes'] ?? null;
 
-    // Check if batch records or single record
-    $records = isset($input['records']) && is_array($input['records']) ? $input['records'] : [$input];
-    $savedCount = 0;
+        if (!$student_id) sendResponse(['error' => 'Student ID required'], 400);
 
-    $stmt = $db->prepare("
-        INSERT INTO attendance (id, student_id, meeting_date, status, attended_mass, confessed) 
-        VALUES (?, ?, ?, ?, ?, ?) 
-        ON DUPLICATE KEY UPDATE 
-            status = VALUES(status), 
-            attended_mass = VALUES(attended_mass), 
-            confessed = VALUES(confessed)
-    ");
+        $id = 'att_' . uniqid();
+        $stmt = $db->prepare("
+            INSERT INTO attendance (id, student_id, meeting_date, status, notes) 
+            VALUES (?, ?, ?, ?, ?) 
+            ON DUPLICATE KEY UPDATE status = VALUES(status), notes = VALUES(notes)
+        ");
+        $stmt->execute([$id, $student_id, $date, $status, $notes]);
 
-    foreach ($records as $r) {
-        $student_id = $r['student_id'] ?? null;
-        if (!$student_id) continue;
-
-        $date = $r['meeting_date'] ?? $r['date'] ?? date('Y-m-d');
-        $status = $r['status'] ?? 'present';
-        $mass = !empty($r['attended_mass']) ? 1 : 0;
-        $confessed = !empty($r['confessed']) ? 1 : 0;
-        $id = $r['id'] ?? ('att_' . md5($student_id . $date));
-
-        $stmt->execute([$id, $student_id, $date, $status, $mass, $confessed]);
-        $savedCount++;
+        sendResponse(['success' => true, 'message' => 'تم تسجيل الحضور في قاعدة البيانات']);
     }
-
-    sendResponse(['success' => true, 'count' => $savedCount, 'message' => 'تم تسجيل وحفظ الحضور بنجاح في قاعدة البيانات']);
 }
