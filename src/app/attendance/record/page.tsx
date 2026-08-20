@@ -19,7 +19,8 @@ import {
   X,
   Clock,
   Sparkles,
-  School
+  School,
+  Calendar
 } from 'lucide-react'
 import { Html5QrcodeScanner } from 'html5-qrcode'
 
@@ -36,6 +37,7 @@ function RecordAttendanceContent() {
   const [classes, setClasses] = useState<ClassItem[]>([])
   const [selectedStage, setSelectedStage] = useState('ابتدائي')
   const [selectedClass, setSelectedClass] = useState(initialClassId)
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
   const [students, setStudents] = useState<StudentItem[]>([])
   const [loading, setLoading] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
@@ -82,7 +84,7 @@ function RecordAttendanceContent() {
     loadClasses()
   }, [initialClassId])
 
-  // Load students for active class and PRE-POPULATE from MySQL today's attendance!
+  // Load students for active class and PRE-POPULATE from MySQL for selected date!
   useEffect(() => {
     async function loadStudents() {
       if (!selectedClass) return
@@ -90,10 +92,10 @@ function RecordAttendanceContent() {
       const data = await getStudents(selectedClass)
       setStudents(data)
       
-      // Fetch today's saved attendance from MySQL
+      // Fetch saved attendance for the chosen date from MySQL
       const isXampp = typeof window !== 'undefined' && window.location.pathname.includes('/stmina')
-      const today = new Date().toISOString().split('T')[0]
-      const attUrl = isXampp ? `/stmina/api/attendance.php?date=${today}` : `/api/attendance.php?date=${today}`
+      const targetDate = selectedDate || new Date().toISOString().split('T')[0]
+      const attUrl = isXampp ? `/stmina/api/attendance.php?date=${targetDate}` : `/api/attendance.php?date=${targetDate}`
       
       let existingAttMap: Record<string, any> = {}
       try {
@@ -107,7 +109,7 @@ function RecordAttendanceContent() {
           }
         }
       } catch (e) {
-        console.error('Error fetching today attendance from MySQL:', e)
+        console.error('Error fetching date attendance from MySQL:', e)
       }
 
       // Initialize attendance, mass, and confession dictionaries with live MySQL data
@@ -126,7 +128,7 @@ function RecordAttendanceContent() {
       setLoading(false)
     }
     loadStudents()
-  }, [selectedClass])
+  }, [selectedClass, selectedDate])
 
   const filteredClassesForSelect = classes.filter(c => selectedStage ? c.stage_name_ar === selectedStage : true)
 
@@ -338,7 +340,7 @@ function RecordAttendanceContent() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          meeting_date: new Date().toISOString().split('T')[0],
+          meeting_date: selectedDate || new Date().toISOString().split('T')[0],
           records: records
         })
       })
@@ -412,6 +414,18 @@ function RecordAttendanceContent() {
                   ))
                 )}
               </select>
+            </div>
+
+            {/* Date Selector */}
+            <div className="flex items-center gap-2 bg-primary/5 border border-primary/30 px-3 py-1 rounded-lg shadow-sm">
+              <Calendar className="h-4 w-4 text-primary" />
+              <span className="text-xs font-bold text-primary">تاريخ الاجتماع:</span>
+              <input
+                type="date"
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+                className="bg-transparent text-xs font-extrabold text-foreground outline-none border-none py-1 px-1 cursor-pointer"
+              />
             </div>
           </div>
 
