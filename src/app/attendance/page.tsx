@@ -56,7 +56,9 @@ export default function AttendancePage() {
     }
 
     // Filter and select all classes of this stage by default
-    const filtered = currentClasses.filter(c => !stageName || c.stage_name_ar === stageName)
+    const filtered = currentClasses.filter(c => 
+      !stageName || c.stage_name === stageName || c.stage_name_ar === stageName || (c.stage_name && stageName.includes(c.stage_name))
+    )
     setSchedClasses(filtered.map(c => c.id))
   }
 
@@ -96,26 +98,38 @@ export default function AttendancePage() {
           if (Array.isArray(mData)) setMeetings(mData)
         }
 
+        let loadedClasses: any[] = []
+        let loadedStages: any[] = []
+
         if (cRes && cRes.ok) {
           const cData = await cRes.json()
           if (Array.isArray(cData)) {
+            loadedClasses = cData
             setClasses(cData)
-            if (cData.length > 0) setSchedClasses([cData[0].id])
           }
         }
 
         if (sRes && sRes.ok) {
           const sData = await sRes.json()
           if (Array.isArray(sData) && sData.length > 0) {
-            setStages(sData.map((s: any) => ({
+            loadedStages = sData.map((s: any) => ({
               id: s.id,
               nameAr: s.name_ar,
               nameEn: s.name_ar,
               defaultDay: '5',
               defaultDayLabel: 'الجمعة'
-            })))
+            }))
+            setStages(loadedStages)
           }
         }
+
+        // Auto-select initial stage and its classes from MySQL
+        const initialStgName = loadedStages[0]?.nameAr || 'ابتدائي'
+        setSchedStage(initialStgName)
+        const initialMatchingClasses = loadedClasses.filter(c => 
+          c.stage_name === initialStgName || c.stage_name_ar === initialStgName || (c.stage_name && initialStgName.includes(c.stage_name))
+        )
+        setSchedClasses(initialMatchingClasses.map(c => c.id))
       } catch (e) {
         console.error('Error loading attendance data:', e)
       } finally {
@@ -478,7 +492,7 @@ export default function AttendancePage() {
                     <button
                       type="button"
                       onClick={() => {
-                        const visibleIds = classes.filter(c => !schedStage || c.stage_name_ar === schedStage).map(c => c.id)
+                        const visibleIds = classes.filter(c => !schedStage || c.stage_name === schedStage || c.stage_name_ar === schedStage || (c.stage_name && schedStage.includes(c.stage_name))).map(c => c.id)
                         if (schedClasses.length === visibleIds.length) {
                           setSchedClasses([])
                         } else {
@@ -487,7 +501,7 @@ export default function AttendancePage() {
                       }}
                       className="text-[10px] text-primary hover:underline font-bold"
                     >
-                      {schedClasses.length === classes.filter(c => !schedStage || c.stage_name_ar === schedStage).length ? 'إلغاء تحديد الكل' : 'تحديد جميع فصول المرحلة'}
+                      {schedClasses.length === classes.filter(c => !schedStage || c.stage_name === schedStage || c.stage_name_ar === schedStage || (c.stage_name && schedStage.includes(c.stage_name))).length ? 'إلغاء تحديد الكل' : 'تحديد جميع فصول المرحلة'}
                     </button>
                   </div>
                   <div className="border border-border rounded-lg p-2.5 bg-muted/20 max-h-36 overflow-y-auto space-y-2 font-sans">
@@ -513,7 +527,7 @@ export default function AttendancePage() {
                           </label>
                         )
                       })}
-                    {classes.filter((c) => !schedStage || c.stage_name_ar === schedStage).length === 0 && (
+                    {classes.filter((c: any) => !schedStage || c.stage_name === schedStage || c.stage_name_ar === schedStage || (c.stage_name && schedStage.includes(c.stage_name))).length === 0 && (
                       <p className="text-[10px] text-muted-foreground text-center py-2">لا توجد فصول لهذه المرحلة.</p>
                     )}
                   </div>
