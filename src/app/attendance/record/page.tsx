@@ -336,14 +336,33 @@ function RecordAttendanceContent() {
         notes: massState[s.id] ? 'حضر القداس الإلهي' : ''
       }))
 
+      const targetDate = selectedDate || new Date().toISOString().split('T')[0]
+      const currentClassObj = classes.find(c => c.id === selectedClass)
+      const classNameStr = currentClassObj ? currentClassObj.name_ar : 'فصل عام'
+      
+      // Save attendance records
       await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          meeting_date: selectedDate || new Date().toISOString().split('T')[0],
+          meeting_date: targetDate,
           records: records
         })
       })
+
+      // Also create/sync the meeting in MySQL meetings table
+      const meetApiUrl = isXampp ? '/stmina/api/meetings.php' : '/api/meetings.php'
+      await fetch(meetApiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: `اجتماع ${classNameStr} الأسبوعي`,
+          meeting_date: targetDate,
+          stage_name: selectedStage || 'ابتدائي',
+          class_id: selectedClass,
+          notes: `تسجيل حضور ${presentCount} مخدوم`
+        })
+      }).catch(() => null)
 
       alert('تم حفظ كشف الحضور والغياب بنجاح في قاعدة البيانات! 💾✨')
     } catch (e) {

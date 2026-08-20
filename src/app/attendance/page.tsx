@@ -221,11 +221,20 @@ export default function AttendancePage() {
     }, 2000)
   }
 
-  // Filter meetings
+  // Filter meetings accurately matching live MySQL IDs and class names
   const filteredMeetings = meetings.filter((m) => {
-    const matchesYear = selectedYear ? m.date.includes(selectedYear) : true
-    const matchesStage = selectedStage ? m.stage_name === selectedStage : true
-    const matchesClass = selectedClass ? m.class_id === selectedClass : true
+    const matchesYear = selectedYear ? (m.date && m.date.startsWith(selectedYear)) : true
+    const matchesStage = selectedStage ? (m.stage_name === selectedStage || m.stage_name_ar === selectedStage) : true
+    
+    let matchesClass = true
+    if (selectedClass) {
+      const classObj = classes.find(c => c.id === selectedClass)
+      matchesClass = (
+        m.class_id === selectedClass ||
+        (classObj && m.class_name === classObj.name_ar) ||
+        (m.class_name && m.class_name.includes(selectedClass))
+      )
+    }
     return matchesYear && matchesStage && matchesClass
   })
 
