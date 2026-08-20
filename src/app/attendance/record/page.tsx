@@ -82,7 +82,7 @@ function RecordAttendanceContent() {
     loadClasses()
   }, [initialClassId])
 
-  // Load students for active class
+  // Load students for active class and PRE-POPULATE from MySQL today's attendance!
   useEffect(() => {
     async function loadStudents() {
       if (!selectedClass) return
@@ -90,14 +90,35 @@ function RecordAttendanceContent() {
       const data = await getStudents(selectedClass)
       setStudents(data)
       
-      // Initialize attendance, mass, and confession dictionaries
+      // Fetch today's saved attendance from MySQL
+      const isXampp = typeof window !== 'undefined' && window.location.pathname.includes('/stmina')
+      const today = new Date().toISOString().split('T')[0]
+      const attUrl = isXampp ? `/stmina/api/attendance.php?date=${today}` : `/api/attendance.php?date=${today}`
+      
+      let existingAttMap: Record<string, any> = {}
+      try {
+        const attRes = await fetch(attUrl)
+        if (attRes.ok) {
+          const attData = await attRes.json()
+          if (Array.isArray(attData)) {
+            attData.forEach((item: any) => {
+              existingAttMap[item.student_id] = item
+            })
+          }
+        }
+      } catch (e) {
+        console.error('Error fetching today attendance from MySQL:', e)
+      }
+
+      // Initialize attendance, mass, and confession dictionaries with live MySQL data
       const dict: Record<string, 'present' | 'absent' | 'late' | 'excused'> = {}
       const mDict: Record<string, boolean> = {}
       const cDict: Record<string, boolean> = {}
       data.forEach((s) => {
-        dict[s.id] = 'absent'
-        mDict[s.id] = false
-        cDict[s.id] = false
+        const existing = existingAttMap[s.id]
+        dict[s.id] = existing ? (existing.status as any) : 'absent'
+        mDict[s.id] = existing ? (existing.attended_mass == 1 || (existing.notes && existing.notes.includes('القداس'))) : false
+        cDict[s.id] = existing ? (existing.confessed == 1 || (existing.notes && existing.notes.includes('اعتراف'))) : false
       })
       setAttendanceState(dict)
       setMassState(mDict)
