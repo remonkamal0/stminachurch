@@ -1,36 +1,54 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ⛪ نظام كنيسة الشهيد العظيم مارمينا | STMINA Church Management System
 
-## Getting Started
+> نظام إدارة مدارس الأحد، شؤون الخدام، المخدومين، الحضور، الافتقاد، والمالية المتكامل.
 
-First, run the development server:
+![STMINA System](public/logo.png)
+
+---
+
+## 🌟 الميزات الرئيسية (Key Features)
+
+- 👥 **سجل ودليل المخدومين الشامل**: إدارة متكاملة للمخدومين مع بروفايل شامل بـ ٦ تبويبات (البيانات، الأسرة، الألحان والطقوس، الحضور، النقاط، خريطة GPS للزيارات).
+- 🛡️ **دليل وشؤون الخدام ومصفوفة الصلاحيات**: إدارة تكليفات الخدام المتعددة (مرحلة ← صف ← فصل ← مسؤولية)، مع دعم ازدواجية الدور (خادم ومخدوم في نفس الوقت)، ونظام ترقية المخدومين إلى خدام بنقرة واحدة 👑.
+- 🏫 **فصول ومراحل كنسية ديناميكية**: ربط لحظي لأعداد الخدام والمخدومين بكل فصل مباشرة من قاعدة بيانات MySQL.
+- 📅 **تسجيل الحضور والغياب والافتقاد**: كشوفات حضور تفاعلية تدعم QR Code مع نظام رصد ومتابعة الغياب التلقائي.
+- 💰 **الإدارة المالية والصناديق**: رصد الاشتراكات، الإيرادات، والمصروفات مع تقارير وإحصائيات فورية.
+- 🖨️ **طباعة الكارنيهات والتقارير**: تصدير الكشوفات وطباعة بطاقات الهوية للخدام والمخدومين.
+- 🚀 **تثبيت ذاتي (Self-Healing MySQL Engine & Web Installer)**: يعمل على الاستضافات المشتركة (cPanel / Plesk / Apache / XAMPP) مع معالج تثبيت `install.php`.
+
+---
+
+## 🛠️ التقنيات المستخدمة (Tech Stack)
+
+- **Frontend**: Next.js 16 (React 19, TypeScript, Tailwind CSS, Lucide Icons).
+- **Backend**: PHP REST API (PDO, Prepared Statements, Self-Healing Schema).
+- **Database**: MySQL 5.7+ / 8.0+ / MariaDB (`utf8mb4_unicode_ci`).
+
+---
+
+## 🚀 كيفية التثبيت والتشغيل محلياً (Local Setup)
 
 ```bash
+# 1. استنساخ المستودع
+git clone https://github.com/remonkamal0/stminachurch.git
+cd stminachurch
+
+# 2. تثبيت الحزم
+npm install
+
+# 3. تشغيل وضع التطوير
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🌐 التثبيت على السيرفر و cPanel
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. ارفع ملفات المشروع أو ملف التصدير إلى `public_html`.
+2. أنشئ قاعدة بيانات MySQL في cPanel.
+3. افتح في المتصفح: `https://yourdomain.com/install.php`
+4. أدخل بيانات الداتابيز واضغط على **"حفظ وبناء قاعدة البيانات تلقائياً"** ليتم تجهيز كل الجداول والبيانات في ثانية واحدة!
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+⛪ **كنيسة الشهيد العظيم مارمينا** • نظام الإدارة المتكامل الشامل

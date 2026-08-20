@@ -1,5 +1,3 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
 # dependencies
 /node_modules
 /.pnp
@@ -10,31 +8,32 @@
 !.yarn/releases
 !.yarn/versions
 
-# testing
-/coverage
-
-# next.js
+# next.js build outputs
 /.next/
 /out/
-
-# production
 /build
+
+# Zip archives and release bundles (kept local/cPanel)
+*.zip
+STMINA_MASTER_BUNDLE/
+STMINA_PHP_RELEASE/
+scratch/
+
+# testing
+/coverage
 
 # misc
 .DS_Store
 *.pem
 
-# debug
+# debug logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
-
-# vercel
-.vercel
+# env files
+.env*.local
 
 # typescript
 *.tsbuildinfo
