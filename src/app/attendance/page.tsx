@@ -56,7 +56,7 @@ export default function AttendancePage() {
     }
 
     // Filter and select all classes of this stage by default
-    const filtered = currentClasses.filter(c => 
+    const filtered = currentClasses.filter((c: any) => 
       !stageName || c.stage_name === stageName || c.stage_name_ar === stageName || (c.stage_name && stageName.includes(c.stage_name))
     )
     setSchedClasses(filtered.map(c => c.id))
@@ -492,7 +492,7 @@ export default function AttendancePage() {
                     <button
                       type="button"
                       onClick={() => {
-                        const visibleIds = classes.filter(c => !schedStage || c.stage_name === schedStage || c.stage_name_ar === schedStage || (c.stage_name && schedStage.includes(c.stage_name))).map(c => c.id)
+                        const visibleIds = classes.filter((c: any) => !schedStage || c.stage_name === schedStage || c.stage_name_ar === schedStage || (c.stage_name && schedStage.includes(c.stage_name))).map(c => c.id)
                         if (schedClasses.length === visibleIds.length) {
                           setSchedClasses([])
                         } else {
@@ -501,12 +501,12 @@ export default function AttendancePage() {
                       }}
                       className="text-[10px] text-primary hover:underline font-bold"
                     >
-                      {schedClasses.length === classes.filter(c => !schedStage || c.stage_name === schedStage || c.stage_name_ar === schedStage || (c.stage_name && schedStage.includes(c.stage_name))).length ? 'إلغاء تحديد الكل' : 'تحديد جميع فصول المرحلة'}
+                      {schedClasses.length === classes.filter((c: any) => !schedStage || c.stage_name === schedStage || c.stage_name_ar === schedStage || (c.stage_name && schedStage.includes(c.stage_name))).length ? 'إلغاء تحديد الكل' : 'تحديد جميع فصول المرحلة'}
                     </button>
                   </div>
                   <div className="border border-border rounded-lg p-2.5 bg-muted/20 max-h-36 overflow-y-auto space-y-2 font-sans">
                     {classes
-                      .filter((c) => !schedStage || c.stage_name_ar === schedStage)
+                      .filter((c: any) => !schedStage || c.stage_name === schedStage || c.stage_name_ar === schedStage || (c.stage_name && schedStage.includes(c.stage_name)))
                       .map((c) => {
                         const isSelected = schedClasses.includes(c.id)
                         return (
@@ -516,7 +516,7 @@ export default function AttendancePage() {
                               checked={isSelected}
                               onChange={() => {
                                 setSchedClasses(prev => 
-                                  prev.includes(c.id) ? prev.filter(id => id !== c.id) : [...prev, c.id]
+                                   prev.includes(c.id) ? prev.filter(id => id !== c.id) : [...prev, c.id]
                                 )
                               }}
                               className="rounded border-border text-primary focus:ring-primary h-3.5 w-3.5"
