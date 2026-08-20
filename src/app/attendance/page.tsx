@@ -182,8 +182,8 @@ export default function AttendancePage() {
     })
   }
 
-  // Save generated events into list state for ALL selected classes
-  const handleSaveMeetings = () => {
+  // Save generated events into MySQL database for ALL selected classes
+  const handleSaveMeetings = async () => {
     if (schedClasses.length === 0) return
 
     const newMeetings: MeetingItem[] = []
@@ -197,7 +197,7 @@ export default function AttendancePage() {
         .filter((ev) => ev.active)
         .forEach((ev, evIdx) => {
           newMeetings.push({
-            id: `gen-${Date.now()}-${classIdx}-${evIdx}`,
+            id: `gen_${Date.now()}_${classIdx}_${evIdx}`,
             class_id: classId,
             class_name: className,
             stage_name: stageName,
@@ -211,6 +211,28 @@ export default function AttendancePage() {
         })
     })
 
+    // Save directly to MySQL via REST API
+    try {
+      const isXampp = typeof window !== 'undefined' && window.location.pathname.includes('/stmina')
+      const meetUrl = isXampp ? '/stmina/api/meetings.php' : '/api/meetings.php'
+      await fetch(meetUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          meetings: newMeetings.map(m => ({
+            id: m.id,
+            title: m.notes || `اجتماع ${m.class_name} الأسبوعي`,
+            meeting_date: m.date,
+            stage_name: m.stage_name,
+            class_id: m.class_id,
+            notes: m.notes
+          }))
+        })
+      })
+    } catch (e) {
+      console.error('Error persisting generated meetings to MySQL:', e)
+    }
+
     setMeetings((prev) => [...newMeetings, ...prev])
     setShowSaveAlert(true)
     setTimeout(() => {
@@ -218,7 +240,7 @@ export default function AttendancePage() {
       setActiveTab('list')
       setGeneratedEvents([])
       setSchedClasses([])
-    }, 2000)
+    }, 1500)
   }
 
   // Filter meetings accurately matching live MySQL IDs and class names
