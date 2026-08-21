@@ -483,13 +483,24 @@ function EditServantPageContent() {
               تعديل الاسم الرباعي، كافة التكليفات والفصول، ازدواجية الدور، وبيانات الدخول والصلاحيات
             </p>
           </div>
-          <Link
-            href={typeof window !== 'undefined' && window.location.pathname.includes('/stmina') ? '/stmina/servants/' : '/servants/'}
-            className="h-9 px-4 rounded-xl border border-border hover:bg-muted font-bold text-xs flex items-center gap-1.5 text-muted-foreground transition"
-          >
-            <ArrowRight className="h-4 w-4" />
-            <span>العودة لقائمة الخدام</span>
-          </Link>
+          <div className="flex items-center gap-2.5">
+            <Link
+              href={typeof window !== 'undefined' && window.location.pathname.includes('/stmina') ? '/stmina/servants/' : '/servants/'}
+              className="h-10 px-4 rounded-xl border border-border hover:bg-muted font-bold text-xs flex items-center gap-1.5 text-muted-foreground transition"
+            >
+              <ArrowRight className="h-4 w-4" />
+              <span>العودة لقائمة الخدام</span>
+            </Link>
+            <button
+              type="button"
+              onClick={handleSubmit}
+              disabled={submitting || !firstName.trim()}
+              className="h-10 px-5 bg-primary text-primary-foreground font-bold text-xs rounded-xl shadow-md hover:bg-primary/95 transition cursor-pointer flex items-center gap-1.5"
+            >
+              <Save className="h-4 w-4" />
+              <span>{submitting ? 'جاري الحفظ...' : 'حفظ التعديلات 💾'}</span>
+            </button>
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -1169,22 +1180,27 @@ function EditServantPageContent() {
 
           </div>
 
-          {/* Submit Actions */}
-          <div className="flex justify-end gap-3 pt-2">
-            <Link
-              href={typeof window !== 'undefined' && window.location.pathname.includes('/stmina') ? '/stmina/servants/' : '/servants/'}
-              className="h-12 px-6 rounded-2xl border border-border hover:bg-muted font-bold text-xs flex items-center justify-center text-muted-foreground transition"
-            >
-              إلغاء وتراجع
-            </Link>
-            <button
-              type="submit"
-              disabled={submitting || !firstName.trim()}
-              className="h-12 px-8 bg-primary text-primary-foreground font-bold text-xs rounded-2xl shadow-lg hover:bg-primary/95 transition cursor-pointer flex items-center gap-2"
-            >
-              <Save className="h-4 w-4" />
-              <span>{submitting ? 'جاري الحفظ...' : 'حفظ وتحديث كافة التعديلات 💾'}</span>
-            </button>
+          {/* Sticky Bottom Save Action Bar */}
+          <div className="sticky bottom-4 z-40 bg-card/95 backdrop-blur-md border-2 border-primary/30 p-4 rounded-2xl shadow-2xl flex items-center justify-between gap-3">
+            <div className="text-xs font-bold text-muted-foreground hidden sm:block">
+              تعديل بيانات وملف الخادم
+            </div>
+            <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
+              <Link
+                href={typeof window !== 'undefined' && window.location.pathname.includes('/stmina') ? '/stmina/servants/' : '/servants/'}
+                className="h-11 px-5 border border-border hover:bg-muted font-bold text-xs rounded-xl flex items-center justify-center text-muted-foreground transition"
+              >
+                إلغاء وتراجع
+              </Link>
+              <button
+                type="submit"
+                disabled={submitting || !firstName.trim()}
+                className="h-11 px-8 bg-primary text-primary-foreground font-bold text-xs rounded-xl shadow-lg hover:bg-primary/95 transition cursor-pointer flex items-center gap-2"
+              >
+                <Save className="h-4 w-4" />
+                <span>{submitting ? 'جاري الحفظ...' : 'حفظ وتحديث كافة التعديلات 💾'}</span>
+              </button>
+            </div>
           </div>
 
         </form>

@@ -324,13 +324,24 @@ function EditStudentPageContent() {
               تعديل وحفظ بيانات: <strong className="text-primary font-bold">{fullName}</strong> 
             </p>
           </div>
-          <Link
-            href={backProfileUrl}
-            className="text-xs font-semibold text-primary hover:underline flex items-center gap-1"
-          >
-            <ArrowRight className="h-4 w-4" />
-            <span>العودة لملف المخدوم</span>
-          </Link>
+          <div className="flex items-center gap-2.5">
+            <Link
+              href={backProfileUrl}
+              className="h-10 px-4 rounded-xl border border-border hover:bg-muted font-bold text-xs flex items-center gap-1.5 text-muted-foreground transition"
+            >
+              <ArrowRight className="h-4 w-4" />
+              <span>العودة لملف المخدوم</span>
+            </Link>
+            <button
+              type="button"
+              onClick={handleUpdate}
+              disabled={submitting}
+              className="h-10 px-5 bg-primary text-primary-foreground font-bold text-xs rounded-xl shadow-md hover:bg-primary/95 transition cursor-pointer flex items-center gap-1.5"
+            >
+              <Save className="h-4 w-4" />
+              <span>{submitting ? 'جاري الحفظ...' : 'حفظ التعديلات 💾'}</span>
+            </button>
+          </div>
         </div>
 
         {/* Form */}
@@ -755,22 +766,27 @@ function EditStudentPageContent() {
             </div>
           </div>
 
-          {/* Submit Action */}
-          <div className="flex justify-end gap-3 pt-3">
-            <Link
-              href={backProfileUrl}
-              className="h-11 px-6 border border-border hover:bg-muted font-bold text-xs rounded-xl flex items-center justify-center text-muted-foreground transition"
-            >
-              إلغاء وتراجع
-            </Link>
-            <button
-              type="submit"
-              disabled={submitting}
-              className="h-11 px-8 bg-primary text-primary-foreground font-bold text-xs rounded-xl shadow-lg hover:bg-primary/95 transition cursor-pointer flex items-center gap-2"
-            >
-              <Save className="h-4 w-4" />
-              <span>{submitting ? 'جاري الحفظ ...' : 'حفظ التعديلات  💾'}</span>
-            </button>
+          {/* Sticky Bottom Save Action Bar */}
+          <div className="sticky bottom-4 z-40 bg-card/95 backdrop-blur-md border-2 border-primary/30 p-4 rounded-2xl shadow-2xl flex items-center justify-between gap-3">
+            <div className="text-xs font-bold text-muted-foreground hidden sm:block">
+              تعديل بيانات: <strong className="text-foreground">{fullName}</strong>
+            </div>
+            <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
+              <Link
+                href={backProfileUrl}
+                className="h-11 px-5 border border-border hover:bg-muted font-bold text-xs rounded-xl flex items-center justify-center text-muted-foreground transition"
+              >
+                إلغاء وتراجع
+              </Link>
+              <button
+                type="submit"
+                disabled={submitting}
+                className="h-11 px-8 bg-primary text-primary-foreground font-bold text-xs rounded-xl shadow-lg hover:bg-primary/95 transition cursor-pointer flex items-center gap-2"
+              >
+                <Save className="h-4 w-4" />
+                <span>{submitting ? 'جاري الحفظ ...' : 'حفظ التعديلات 💾'}</span>
+              </button>
+            </div>
           </div>
 
         </form>
