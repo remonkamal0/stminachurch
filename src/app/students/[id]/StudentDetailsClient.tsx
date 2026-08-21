@@ -367,72 +367,101 @@ export default function StudentDetailsPage() {
 
   const [isSavingAvatar, setIsSavingAvatar] = useState(false)
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0]
+  // Compress image to ~30KB before saving to MySQL
+  const compressImage = (file: File): Promise<string> => {
+    return new Promise((resolve) => {
       const reader = new FileReader()
-      reader.onload = async (event) => {
-        if (event.target?.result) {
-          const base64Data = event.target.result as string
-          setCustomAvatar(base64Data)
-          setIsSavingAvatar(true)
-
-          try {
-            const isXampp = typeof window !== 'undefined' && window.location.pathname.includes('/stmina')
-            const apiUrl = isXampp ? '/stmina/api/students.php' : '/api/students.php'
-            
-            const targetId = student?.id || id || (typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('id') : '')
-            
-            if (targetId) {
-              const res = await fetch(apiUrl, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  id: targetId,
-                  full_name: student?.full_name || 'مخدوم',
-                  avatar_url: base64Data,
-                  gender: student?.gender || 'بنين',
-                  class_name: student?.class_name || 'فصل الشهيد مارمينا',
-                  stage_name: student?.stage_name || 'ابتدائي',
-                  deacon_rank: student?.deacon_rank || 'none',
-                  birth_date: student?.birth_date,
-                  school: student?.school,
-                  phone_student: student?.student_phone,
-                  phone_father: student?.father_phone,
-                  father_job: student?.father_job,
-                  mother_name: student?.mother_name,
-                  phone_mother: student?.mother_phone,
-                  mother_job: student?.mother_job,
-                  area_zone: student?.area,
-                  street_address: student?.address,
-                  gps_location: student?.gps_location,
-                  confession_father_name: student?.confession_father,
-                  confession_last_date: student?.confession_last_date,
-                  talents: Array.isArray(student?.talents) ? student?.talents.join(',') : student?.talents,
-                  notes: student?.notes,
-                  health_notes: student?.health_notes,
-                  total_points: student?.total_points || 0
-                })
-              })
-
-              if (res.ok) {
-                alert('تم حفظ وتحديث صورة المخدوم في قاعدة البيانات بنجاح! 📸💾')
-                if (student) {
-                  setStudent({ ...student, avatar_url: base64Data })
-                }
-              } else {
-                alert('حدث خطأ أثناء حفظ الصورة في قاعدة البيانات.')
-              }
+      reader.onload = (e) => {
+        const img = new Image()
+        img.onload = () => {
+          const canvas = document.createElement('canvas')
+          const MAX_DIM = 400
+          let width = img.width
+          let height = img.height
+          if (width > height) {
+            if (width > MAX_DIM) {
+              height = Math.round((height * MAX_DIM) / width)
+              width = MAX_DIM
             }
-          } catch (err) {
-            console.error('Error saving avatar to MySQL:', err)
-            alert('حدث خطأ في الاتصال بالخادم أثناء حفظ الصورة.')
-          } finally {
-            setIsSavingAvatar(false)
+          } else {
+            if (height > MAX_DIM) {
+              width = Math.round((width * MAX_DIM) / height)
+              height = MAX_DIM
+            }
           }
+          canvas.width = width
+          canvas.height = height
+          const ctx = canvas.getContext('2d')
+          ctx?.drawImage(img, 0, 0, width, height)
+          resolve(canvas.toDataURL('image/jpeg', 0.85))
         }
+        img.src = e.target?.result as string
       }
       reader.readAsDataURL(file)
+    })
+  }
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0]
+      try {
+        setIsSavingAvatar(true)
+        const compressedBase64 = await compressImage(file)
+        setCustomAvatar(compressedBase64)
+
+        const targetId = student?.id || id || (typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('id') : '')
+        
+        if (targetId) {
+          // 1. Save to localStorage cache immediately
+          if (typeof window !== 'undefined') {
+            localStorage.setItem(`ssms_student_avatar_${targetId}`, compressedBase64)
+          }
+
+          // 2. Persist to MySQL database
+          const isXampp = typeof window !== 'undefined' && window.location.pathname.includes('/stmina')
+          const apiUrl = isXampp ? '/stmina/api/students.php' : '/api/students.php'
+          
+          await fetch(apiUrl, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              id: targetId,
+              full_name: student?.full_name || 'مخدوم',
+              avatar_url: compressedBase64,
+              gender: student?.gender || 'بنين',
+              class_name: student?.class_name || 'فصل الشهيد مارمينا',
+              stage_name: student?.stage_name || 'ابتدائي',
+              deacon_rank: student?.deacon_rank || 'none',
+              birth_date: student?.birth_date,
+              school: student?.school,
+              phone_student: student?.student_phone,
+              phone_father: student?.father_phone,
+              father_job: student?.father_job,
+              mother_name: student?.mother_name,
+              phone_mother: student?.mother_phone,
+              mother_job: student?.mother_job,
+              area_zone: student?.area,
+              street_address: student?.address,
+              gps_location: student?.gps_location,
+              confession_father_name: student?.confession_father,
+              confession_last_date: student?.confession_last_date,
+              talents: Array.isArray(student?.talents) ? student?.talents.join(',') : student?.talents,
+              notes: student?.notes,
+              health_notes: student?.health_notes,
+              total_points: student?.total_points || 0
+            })
+          })
+
+          if (student) {
+            setStudent({ ...student, avatar_url: compressedBase64 })
+          }
+          alert('تم حفظ وتحديث صورة المخدوم بنجاح! 📸💾')
+        }
+      } catch (err) {
+        console.error('Error saving avatar:', err)
+      } finally {
+        setIsSavingAvatar(false)
+      }
     }
   }
 
@@ -445,6 +474,10 @@ export default function StudentDetailsPage() {
         const t = await getStudentTimeline(id)
         
         const savedTimeline = localStorage.getItem(`ssms-student-timeline-${id}`)
+        if (typeof window !== 'undefined') {
+          const cachedAvatar = localStorage.getItem(`ssms_student_avatar_${id}`)
+          if (cachedAvatar) setCustomAvatar(cachedAvatar)
+        }
         if (savedTimeline) {
           try {
             const parsed = JSON.parse(savedTimeline)
