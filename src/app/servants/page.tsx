@@ -72,14 +72,22 @@ function ServantsPageContent() {
     return isXampp ? `/stmina/api/${endpoint}` : `/api/${endpoint}`
   }
 
+  const [classesList, setClassesList] = useState<any[]>([])
+
   const loadLiveServants = async () => {
     try {
       setLoading(true)
-      const [srvRes, stgRes, prRes] = await Promise.all([
+      const [srvRes, stgRes, prRes, clsRes] = await Promise.all([
         fetch(getApiUrl('servants.php')).catch(() => null),
         fetch(getApiUrl('stages.php')).catch(() => null),
-        fetch(getApiUrl('priests.php')).catch(() => null)
+        fetch(getApiUrl('priests.php')).catch(() => null),
+        fetch(getApiUrl('classes.php')).catch(() => null)
       ])
+
+      if (clsRes && clsRes.ok) {
+        const clsData = await clsRes.json()
+        if (Array.isArray(clsData)) setClassesList(clsData)
+      }
 
       if (srvRes && srvRes.ok) {
         const data = await srvRes.json()
@@ -198,11 +206,18 @@ function ServantsPageContent() {
     const matchStage = selectedStageFilter === 'all' || s.stage_name === selectedStageFilter
     const matchRole = selectedRoleFilter === 'all' || s.role === selectedRoleFilter
 
-    const matchClass = selectedClassFilter
+    // Resolve class filter whether passed as name or id
+    const resolvedClassName = (classesList.find(c => c.id === selectedClassFilter)?.name_ar || selectedClassFilter || '').toLowerCase()
+
+    const matchClass = resolvedClassName
       ? (
-          (s.class_name && s.class_name.toLowerCase().includes(selectedClassFilter.toLowerCase())) ||
-          (typeof s.service_assignments === 'string' && s.service_assignments.toLowerCase().includes(selectedClassFilter.toLowerCase())) ||
-          (Array.isArray(s.service_assignments) && s.service_assignments.some((asg: any) => asg.class_name && asg.class_name.toLowerCase().includes(selectedClassFilter.toLowerCase())))
+          (s.class_name && s.class_name.toLowerCase().includes(resolvedClassName)) ||
+          (s.class_id && s.class_id === selectedClassFilter) ||
+          (typeof s.service_assignments === 'string' && s.service_assignments.toLowerCase().includes(resolvedClassName)) ||
+          (Array.isArray(s.service_assignments) && s.service_assignments.some((asg: any) => 
+            (asg.class_name && asg.class_name.toLowerCase().includes(resolvedClassName)) ||
+            (asg.class_id && asg.class_id === selectedClassFilter)
+          ))
         )
       : true
 

@@ -414,12 +414,12 @@ export default function ClassesPage() {
                         </span>
                       </td>
                       <td className="px-4 py-3.5 text-center font-bold">
-                        <Link href={`/students?classId=${cls.id}`} className="text-primary hover:underline font-bold bg-primary/5 px-2.5 py-1 rounded-lg border border-primary/20 inline-block">
+                        <Link href={typeof window !== 'undefined' && window.location.pathname.includes('/stmina') ? `/stmina/students/?classId=${encodeURIComponent(cls.id)}&className=${encodeURIComponent(cls.name_ar)}` : `/students/?classId=${encodeURIComponent(cls.id)}&className=${encodeURIComponent(cls.name_ar)}`} className="text-primary hover:underline font-bold bg-primary/5 px-2.5 py-1 rounded-lg border border-primary/20 inline-block">
                           {cls.students_count || 0}
                         </Link>
                       </td>
                       <td className="px-4 py-3.5 text-center font-bold">
-                        <Link href={`/servants?classId=${cls.id}`} className="text-muted-foreground hover:underline">
+                        <Link href={typeof window !== 'undefined' && window.location.pathname.includes('/stmina') ? `/stmina/servants/?className=${encodeURIComponent(cls.name_ar)}&classId=${encodeURIComponent(cls.id)}` : `/servants/?className=${encodeURIComponent(cls.name_ar)}&classId=${encodeURIComponent(cls.id)}`} className="text-primary hover:underline font-bold bg-primary/5 px-2.5 py-1 rounded-lg border border-primary/20 inline-block">
                           {cls.servants_count || 0}
                         </Link>
                       </td>
