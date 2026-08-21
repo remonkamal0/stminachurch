@@ -868,7 +868,7 @@ export default function StudentDetailsPage() {
               <div className="h-28 w-28 rounded-full overflow-hidden border-2 border-primary/20 bg-muted/40 shrink-0 shadow-inner">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={customAvatar || (student.gender === 'male' ? '/avatar_boy.jpg' : '/avatar_girl.jpg')}
+                  src={customAvatar || student.avatar_url || (student as any).avatar || ((student.gender === 'female' || (student.gender as any) === 'بنات') ? '/avatar_girl.jpg' : '/avatar_boy.jpg')}
                   alt={student.full_name}
                   className="h-full w-full object-cover"
                 />
