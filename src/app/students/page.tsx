@@ -489,7 +489,7 @@ function StudentsDirectoryPageContent() {
                       setPromoteStage(newStg)
                       const stageGrades = gradesList.filter(g => g.stage_name === newStg)
                       if (stageGrades.length > 0) setPromoteGrade(stageGrades[0].name_ar)
-                      const matchingClasses = classes.filter(c => c.stage_name === newStg || c.stage_name_ar === newStg)
+                      const matchingClasses = classes.filter((c: any) => c.stage_name === newStg || c.stage_name_ar === newStg)
                       if (matchingClasses.length > 0) setPromoteClass(matchingClasses[0].name_ar)
                     }}
                     className="w-full bg-muted/40 border border-border rounded-xl px-3 py-2.5 outline-none focus:border-amber-500 font-bold cursor-pointer"
@@ -542,7 +542,7 @@ function StudentsDirectoryPageContent() {
                 <div className="space-y-1">
                   <label className="font-bold text-foreground">٣. الفصل المكلف به *</label>
                   {(() => {
-                    const stageClasses = classes.filter(c => c.stage_name === promoteStage || c.stage_name_ar === promoteStage)
+                    const stageClasses = classes.filter((c: any) => c.stage_name === promoteStage || c.stage_name_ar === promoteStage)
                     return stageClasses.length > 0 ? (
                       <select
                         value={promoteClass}
