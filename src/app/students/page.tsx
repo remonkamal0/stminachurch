@@ -592,19 +592,24 @@ function StudentsDirectoryPageContent() {
 
               </div>
 
-              {/* 5. System Permissions Selector */}
+              {/* 5. System Permissions Selector (All 7 Roles from System Roles Cards) */}
               <div className="space-y-1.5 pt-1">
-                <label className="font-bold text-foreground block">٥. مستوى الصلاحية في النظام:</label>
+                <label className="font-bold text-foreground flex items-center justify-between">
+                  <span>٥. مستوى الصلاحية في النظام (الأدوار الوظيفية):</span>
+                  <span className="text-[10px] text-amber-600 dark:text-amber-400 font-normal">مطابقة للأدوار السبعة</span>
+                </label>
                 <select
                   value={promoteSystemRole}
                   onChange={(e) => setPromoteSystemRole(e.target.value)}
                   className="w-full bg-card border border-border rounded-xl px-3 py-2.5 outline-none focus:border-amber-500 font-bold text-foreground cursor-pointer shadow-sm"
                 >
-                  <option value="servant">🛡️ خادم فصل (تسجيل حضور وافتقاد ونقاط فصوله)</option>
-                  <option value="class_leader">⭐ أمين فصل (إدارة الفصل والطلاب بالكامل)</option>
-                  <option value="stage_leader">🎖️ أمين مرحلة (إدارة المرحلة وفصولها ومناهجها)</option>
-                  <option value="sector_leader">🏛️ أمين قطاع (إشراف ومتابعة فصول ومراحل متعددة)</option>
-                  <option value="service_admin">👑 أمين عام الخدمة (صلاحيات إدارية كاملة)</option>
+                  <option value="servant">🛡️ خادم فصل — تسجيل الحضور والغياب، رصد نقاط النشاط، وكتابة تقارير الافتقاد لفصله</option>
+                  <option value="class_leader">⭐ أمين فصل — مسؤول عن فصله الدراسي، رصد الحضور، النقاط، ومتابعة الافتقاد وتعديل المخدومين</option>
+                  <option value="stage_leader">🎖️ أمين مرحلة — إشراف على الخدام والفصول والتقارير والمناهج داخل مرحلته الدراسية فقط</option>
+                  <option value="sector_leader">🏛️ أمين قطاع — إشراف على فصول ومراحل متعددة داخل قطاع محدد بالكنيسة</option>
+                  <option value="service_admin">👑 أمين عام الخدمة — صلاحيات إدارية ومالية كاملة على مستوى جميع الكنائس والخدمات والمراحل</option>
+                  <option value="treasurer">💰 أمين صندوق ومسؤول مالي — تسجيل وإدارة حسابات الخدمة والاشتراكات والعهد المالية والمصروفات</option>
+                  <option value="priest">✝️ كاهن / أب اعتراف — رعاية روحية كاملة واطلاع على كافة التقارير وسجلات الاعتراف والحسابات دون تعديل إداري</option>
                 </select>
               </div>
 
