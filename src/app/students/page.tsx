@@ -36,12 +36,18 @@ function StudentsDirectoryPageContent() {
   const [studentToPromote, setStudentToPromote] = useState<StudentItem | null>(null)
   const [showPromoteModal, setShowPromoteModal] = useState(false)
   const [promoteStage, setPromoteStage] = useState('ابتدائي')
+  const [promoteGrade, setPromoteGrade] = useState('الصف الأول الابتدائي')
   const [promoteClass, setPromoteClass] = useState('')
   const [promoteRole, setPromoteRole] = useState('خادم فصل')
+  const [promoteSystemRole, setPromoteSystemRole] = useState('servant')
   const [promoteUsername, setPromoteUsername] = useState('')
   const [promotePassword, setPromotePassword] = useState('123456')
   const [promoteKeepStudentRole, setPromoteKeepStudentRole] = useState(true)
   const [isPromoting, setIsPromoting] = useState(false)
+  
+  // Live stages and grades for cascaded promotion
+  const [stagesList, setStagesList] = useState<string[]>([])
+  const [gradesList, setGradesList] = useState<any[]>([])
 
   // Filters State
   const [searchTerm, setSearchTerm] = useState('')
@@ -63,11 +69,32 @@ function StudentsDirectoryPageContent() {
   }
 
   const loadData = async () => {
-    const sData = await getStudents()
-    const cData = await getClasses()
-    setStudents(sData)
-    setClasses(cData)
-    setLoading(false)
+    try {
+      const sData = await getStudents()
+      const cData = await getClasses()
+      setStudents(sData)
+      setClasses(cData)
+
+      const isXampp = typeof window !== 'undefined' && window.location.pathname.includes('/stmina')
+      const stgUrl = isXampp ? '/stmina/api/stages.php' : '/api/stages.php'
+      const grdUrl = isXampp ? '/stmina/api/grades.php' : '/api/grades.php'
+      const [stgRes, grdRes] = await Promise.all([
+        fetch(stgUrl).catch(() => null),
+        fetch(grdUrl).catch(() => null)
+      ])
+      if (stgRes && stgRes.ok) {
+        const stgData = await stgRes.json()
+        if (Array.isArray(stgData)) setStagesList(stgData.map((s: any) => s.name_ar).filter(Boolean))
+      }
+      if (grdRes && grdRes.ok) {
+        const grdData = await grdRes.json()
+        if (Array.isArray(grdData)) setGradesList(grdData)
+      }
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setLoading(false)
+    }
   }
 
   useEffect(() => {
