@@ -81,11 +81,11 @@ export async function getStudents(classId?: string, search?: string): Promise<St
             age: calculatedAge,
             status: 'active',
             class_id: item.class_id || 'c1',
-            class_name: item.class_name || 'فصل الأنبا بيشوي',
+            class_name: item.class_name || 'فصل الشهيد مارمينا',
             stage_name: item.stage_name || 'ابتدائي',
             grade_name: item.grade_name || 'ثالثة ابتدائي',
             father_name: item.full_name?.split(' ')[1] || 'الأب',
-            mother_name: 'الأم',
+            mother_name: item.mother_name || 'غير مسجل',
             father_phone: item.phone_father || '',
             mother_phone: item.phone_mother || '',
             student_phone: item.phone_student || null,
@@ -93,11 +93,13 @@ export async function getStudents(classId?: string, search?: string): Promise<St
             school: item.school || 'مدرسة مارمينا',
             area: item.area_zone || 'محطة الرمل',
             address: item.street_address || 'شارع الكنيسة',
+            avatar_url: item.avatar_url || null,
             confession_father: item.confession_father_name || 'أبونا تادرس',
             confession_last_date: item.confession_last_date || null,
             talents: talentArr,
             notes: item.notes || null,
             health_notes: item.health_notes || null,
+            total_points: parseInt(item.total_points) || 0,
             points_balance: parseInt(item.total_points) || 0,
             gps_location: item.gps_location,
             created_at: item.created_at || new Date().toISOString()
@@ -113,6 +115,58 @@ export async function getStudents(classId?: string, search?: string): Promise<St
 }
 
 export async function getStudentById(id: string): Promise<StudentItem | null> {
+  try {
+    const res = await fetch(getApiUrl(`students.php?id=${id}`), { cache: 'no-store' })
+    if (res.ok) {
+      const item = await res.json()
+      if (item && item.id) {
+        const birthYear = item.birth_date ? new Date(item.birth_date).getFullYear() : 2016
+        const calculatedAge = Math.max(1, new Date().getFullYear() - birthYear)
+        const talentArr = item.talents ? item.talents.split(',').map((t: string) => t.trim()).filter(Boolean) : ['ألحان', 'تنس طاولة']
+
+        return {
+          id: item.id,
+          numeric_code: 1001,
+          qr_code: `SSMS-STD-${item.id}`,
+          first_name: item.full_name?.split(' ')[0] || '',
+          second_name: item.full_name?.split(' ')[1] || '',
+          third_name: item.full_name?.split(' ')[2] || '',
+          last_name: item.full_name?.split(' ')[3] || '',
+          full_name: item.full_name || 'مخدوم',
+          gender: item.gender === 'بنات' || item.gender === 'female' ? 'female' : 'male',
+          deacon_rank: item.deacon_rank || 'none',
+          birth_date: item.birth_date || '2016-01-01',
+          age: calculatedAge,
+          status: 'active',
+          class_id: item.class_id || 'c1',
+          class_name: item.class_name || 'فصل الشهيد مارمينا',
+          stage_name: item.stage_name || 'ابتدائي',
+          grade_name: item.grade_name || 'ثالثة ابتدائي',
+          father_name: item.full_name?.split(' ')[1] || 'الأب',
+          mother_name: item.mother_name || 'غير مسجل',
+          father_phone: item.phone_father || '',
+          mother_phone: item.phone_mother || '',
+          student_phone: item.phone_student || null,
+          email: null,
+          school: item.school || 'مدرسة مارمينا',
+          area: item.area_zone || 'محطة الرمل',
+          address: item.street_address || 'شارع الكنيسة',
+          avatar_url: item.avatar_url || null,
+          confession_father: item.confession_father_name || 'أبونا تادرس',
+          confession_last_date: item.confession_last_date || null,
+          talents: talentArr,
+          notes: item.notes || null,
+          health_notes: item.health_notes || null,
+          total_points: parseInt(item.total_points) || 0,
+          points_balance: parseInt(item.total_points) || 0,
+          gps_location: item.gps_location,
+          created_at: item.created_at || new Date().toISOString()
+        }
+      }
+    }
+  } catch (err) {
+    console.error('Error fetching student by ID:', err)
+  }
   const all = await getStudents()
   return all.find(s => s.id === id) || (all.length > 0 ? all[0] : null)
 }
