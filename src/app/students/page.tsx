@@ -445,51 +445,139 @@ function StudentsDirectoryPageContent() {
               </button>
             </div>
 
-            <div className="space-y-3 text-xs max-h-[60vh] overflow-y-auto p-1">
+            <div className="space-y-3.5 text-xs max-h-[70vh] overflow-y-auto p-1 font-sans">
+              
+              {/* 4 Cascaded Selectors */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                
+                {/* 1. Stage */}
                 <div className="space-y-1">
-                  <label className="font-bold text-foreground">المرحلة المكلف بخدمتها كخادم *</label>
+                  <label className="font-bold text-foreground flex items-center gap-1">
+                    <span>١. المرحلة المكلف بها *</span>
+                  </label>
                   <select
                     value={promoteStage}
-                    onChange={(e) => setPromoteStage(e.target.value)}
+                    onChange={(e) => {
+                      const newStg = e.target.value
+                      setPromoteStage(newStg)
+                      const stageGrades = gradesList.filter(g => g.stage_name === newStg)
+                      if (stageGrades.length > 0) setPromoteGrade(stageGrades[0].name_ar)
+                      const matchingClasses = classes.filter(c => c.stage_name === newStg || c.stage_name_ar === newStg)
+                      if (matchingClasses.length > 0) setPromoteClass(matchingClasses[0].name_ar)
+                    }}
                     className="w-full bg-muted/40 border border-border rounded-xl px-3 py-2.5 outline-none focus:border-amber-500 font-bold cursor-pointer"
                   >
-                    <option value="حضانة">حضانة</option>
-                    <option value="ابتدائي">ابتدائي</option>
-                    <option value="إعدادي">إعدادي</option>
-                    <option value="ثانوي">ثانوي</option>
-                    <option value="جامعيين وخريجين">جامعيين وخريجين</option>
-                    <option value="خدمة الكشافة والمرشدات">خدمة الكشافة والمرشدات</option>
-                    <option value="خدمة الكورال والترانيم">خدمة الكورال والترانيم</option>
-                    <option value="خدمة أخوة الرب">خدمة أخوة الرب</option>
+                    {stagesList.length > 0 ? (
+                      stagesList.map((stg, idx) => (
+                        <option key={idx} value={stg}>{stg}</option>
+                      ))
+                    ) : (
+                      <>
+                        <option value="ابتدائي">ابتدائي</option>
+                        <option value="إعدادي">إعدادي</option>
+                        <option value="ثانوي">ثانوي</option>
+                        <option value="حضانة">حضانة</option>
+                        <option value="جامعيين وخريجين">جامعيين وخريجين</option>
+                      </>
+                    )}
+                    <option value="أنشطة ولجان عامة">أنشطة ولجان عامة</option>
                   </select>
                 </div>
 
+                {/* 2. Grade */}
                 <div className="space-y-1">
-                  <label className="font-bold text-foreground">الفصل المكلف به *</label>
-                  <input
-                    type="text"
-                    placeholder="مثال: أولى ابتدائي (بنين)"
-                    value={promoteClass}
-                    onChange={(e) => setPromoteClass(e.target.value)}
-                    className="w-full bg-muted/40 border border-border rounded-xl px-3 py-2.5 outline-none focus:border-amber-500 font-bold"
-                  />
+                  <label className="font-bold text-foreground">٢. الصف / السنة الدراسية:</label>
+                  {(() => {
+                    const stageGrades = gradesList.filter(g => g.stage_name === promoteStage)
+                    return stageGrades.length > 0 ? (
+                      <select
+                        value={promoteGrade}
+                        onChange={(e) => setPromoteGrade(e.target.value)}
+                        className="w-full bg-muted/40 border border-border rounded-xl px-3 py-2.5 outline-none focus:border-amber-500 font-bold cursor-pointer"
+                      >
+                        {stageGrades.map((grd) => (
+                          <option key={grd.id} value={grd.name_ar}>{grd.name_ar}</option>
+                        ))}
+                        <option value="عام لكل الصفوف">عام لكل الصفوف</option>
+                      </select>
+                    ) : (
+                      <input
+                        type="text"
+                        value={promoteGrade}
+                        onChange={(e) => setPromoteGrade(e.target.value)}
+                        className="w-full bg-muted/40 border border-border rounded-xl px-3 py-2.5 outline-none focus:border-amber-500 font-bold"
+                      />
+                    )
+                  })()}
                 </div>
+
+                {/* 3. Class */}
+                <div className="space-y-1">
+                  <label className="font-bold text-foreground">٣. الفصل المكلف به *</label>
+                  {(() => {
+                    const stageClasses = classes.filter(c => c.stage_name === promoteStage || c.stage_name_ar === promoteStage)
+                    return stageClasses.length > 0 ? (
+                      <select
+                        value={promoteClass}
+                        onChange={(e) => setPromoteClass(e.target.value)}
+                        className="w-full bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 rounded-xl px-3 py-2.5 outline-none focus:border-amber-500 font-bold cursor-pointer"
+                      >
+                        {stageClasses.map((cls) => (
+                          <option key={cls.id} value={cls.name_ar}>
+                            {cls.name_ar} {cls.gender ? `(${cls.gender})` : ''}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input
+                        type="text"
+                        value={promoteClass}
+                        onChange={(e) => setPromoteClass(e.target.value)}
+                        className="w-full bg-muted/40 border border-border rounded-xl px-3 py-2.5 outline-none focus:border-amber-500 font-bold"
+                      />
+                    )
+                  })()}
+                </div>
+
+                {/* 4. Role Title */}
+                <div className="space-y-1">
+                  <label className="font-bold text-foreground">٤. المسمى والمسؤولية:</label>
+                  <select
+                    value={promoteRole}
+                    onChange={(e) => {
+                      const val = e.target.value
+                      setPromoteRole(val)
+                      if (val === 'أمين مرحلة') setPromoteSystemRole('stage_leader')
+                      else if (val === 'أمين فصل') setPromoteSystemRole('class_leader')
+                      else setPromoteSystemRole('servant')
+                    }}
+                    className="w-full bg-muted/40 border border-border rounded-xl px-3 py-2.5 outline-none focus:border-amber-500 font-bold cursor-pointer"
+                  >
+                    <option value="خادم فصل">🛡️ خادم فصل</option>
+                    <option value="أمين فصل">⭐ أمين فصل</option>
+                    <option value="أمين مرحلة">🎖️ أمين مرحلة</option>
+                    <option value="مساعد خادم">مساعد خادم</option>
+                    <option value="معلم ألحان وطقس">معلم ألحان وطقس</option>
+                    <option value="خادم كورال وترانيم">خادم كورال وترانيم</option>
+                    <option value="قائد كشفي">قائد كشفي</option>
+                  </select>
+                </div>
+
               </div>
 
-              <div className="space-y-1">
-                <label className="font-bold text-foreground">المسمى والمسؤولية في الخدمة:</label>
+              {/* 5. System Permissions Selector */}
+              <div className="space-y-1.5 pt-1">
+                <label className="font-bold text-foreground block">٥. مستوى الصلاحية في النظام:</label>
                 <select
-                  value={promoteRole}
-                  onChange={(e) => setPromoteRole(e.target.value)}
-                  className="w-full bg-muted/40 border border-border rounded-xl px-3 py-2.5 outline-none focus:border-amber-500 font-bold cursor-pointer"
+                  value={promoteSystemRole}
+                  onChange={(e) => setPromoteSystemRole(e.target.value)}
+                  className="w-full bg-card border border-border rounded-xl px-3 py-2.5 outline-none focus:border-amber-500 font-bold text-foreground cursor-pointer shadow-sm"
                 >
-                  <option value="خادم فصل">🛡️ خادم فصل</option>
-                  <option value="أمين فصل">⭐ أمين فصل</option>
-                  <option value="أمين مرحلة">🎖️ أمين مرحلة</option>
-                  <option value="مساعد خادم">مساعد خادم</option>
-                  <option value="معلم ألحان وطقس">معلم ألحان وطقس</option>
-                  <option value="خادم كورال وترانيم">خادم كورال وترانيم</option>
+                  <option value="servant">🛡️ خادم فصل (تسجيل حضور وافتقاد ونقاط فصوله)</option>
+                  <option value="class_leader">⭐ أمين فصل (إدارة الفصل والطلاب بالكامل)</option>
+                  <option value="stage_leader">🎖️ أمين مرحلة (إدارة المرحلة وفصولها ومناهجها)</option>
+                  <option value="sector_leader">🏛️ أمين قطاع (إشراف ومتابعة فصول ومراحل متعددة)</option>
+                  <option value="service_admin">👑 أمين عام الخدمة (صلاحيات إدارية كاملة)</option>
                 </select>
               </div>
 
